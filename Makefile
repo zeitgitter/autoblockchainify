@@ -81,7 +81,6 @@ ${QEMUDETECT}:
 	    echo "Cannot remove docker container on ZFS; retry after next reboot") \
 	  | grep -v 'dataset is busy'
 
-
 buildx: ${BUILDXDETECT}
 ${BUILDXDETECT}:
 	@echo
