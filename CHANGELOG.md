@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 0.9.1+ - [Unreleased]
+## Added
+
+## Fixed
+- Handle that `.gnupg` also is in the volume now
+
+## Changed
+
+
 # 0.9.1 - 2020-09-27
 ## Added
 - Support `.ssh` directory in the `blockchain` directory (not included in the
