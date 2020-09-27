@@ -18,6 +18,11 @@ RUN pip3 install autoblockchainify ##PRODONLY##
 ##DEVONLY## COPY autoblockchainify-*.whl /root/
 ##DEVONLY## RUN pip3 install /root/autoblockchainify-*.whl
 
+# Ensure SSH keys also survive an update
+# `usermod --home /blockchain root` refuses, as there are running procs
+RUN sed 's,:/root:,:/blockchain:,' < /etc/passwd > /etc/passwd+ && \
+    mv /etc/passwd+ /etc/passwd
+
 # Import (old-style) PGP key for PGP Digital Timestamping Service, so it is
 # ready if anyone wants to use it
 COPY stamper.asc /tmp
