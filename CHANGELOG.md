@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Fixed
 - `sample.env` now contains the actual names of the environment variables.
+- Serialization for mail-related processing to avoid duplicate work and race
+  conditions
 
 ## Changed
 - Format of PGP Timestamper request mail message (ISO 8601 format)
