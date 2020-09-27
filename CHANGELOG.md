@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `sample.env` now contains the actual names of the environment variables.
 
 ## Changed
+- Format of PGP Timestamper request mail message (ISO 8601 format)
 
 
 # 0.9.0 - 2020-09-26
