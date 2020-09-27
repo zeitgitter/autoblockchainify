@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Blockchain by default)
 
 ## Fixed
+- `sample.env` now contains the actual names of the environment variables.
 
 ## Changed
 
