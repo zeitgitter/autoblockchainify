@@ -75,6 +75,11 @@ qemu:	${QEMUDETECT}
 ${QEMUDETECT}:
 	docker pull multiarch/qemu-user-static
 	docker run --privileged multiarch/qemu-user-static --reset -p yes
+	docker ps -a | sed -n 's, *multiarch/qemu-user-static.*,,p' \
+	  | (xargs docker rm 2>&1 || \
+	    echo "Cannot remove docker container on ZFS; retry after next reboot") \
+	  | grep -v 'dataset is busy'
+
 
 buildx: ${BUILDXDETECT}
 ${BUILDXDETECT}:
