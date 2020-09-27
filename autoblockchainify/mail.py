@@ -312,11 +312,14 @@ def async_email_timestamp(resume=False):
     """If called with `resume=True`, tries to resume waiting for the mail"""
     path = autoblockchainify.config.arg.repository
     repo = git.Repository(path)
+    if repo.head_is_unborn:
+        if resume:
+            logging.info("Cannot resume timestamp by email in repository without commits")
+        else:
+            logging.error("Cannot timestamp by email in repository without commits")
+        return
     head = repo.head
     logfile = Path(path, 'pgp-timestamp.tmp')
-    if repo.head_is_unborn:
-        logging.error("Cannot timestamp by email in repository without commits")
-        return
     if resume:
         if not logfile.is_file():
             logging.info("Not resuming mail timestamp: No pending mail reply")
