@@ -330,9 +330,9 @@ def async_email_timestamp(resume=False):
             logging.info("Not resuming mail timestamp: No revision info")
             return
     else:  # Fresh request
-        new_rev = ("Timestamp requested for\ngit commit %s\nat %s\n" %
+        new_rev = ("git commit %s\nTimestamp requested at %s\n" %
                    (head.target.hex,
-                    strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())))
+                    strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))
         with logfile.open('w') as f:
             f.write(new_rev)
         send(new_rev)
