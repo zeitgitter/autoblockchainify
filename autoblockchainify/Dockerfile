@@ -25,12 +25,10 @@ RUN sed 's,:/root:,:/blockchain:,' < /etc/passwd > /etc/passwd+ && \
 
 # Import (old-style) PGP key for PGP Digital Timestamping Service, so it is
 # ready if anyone wants to use it
-COPY stamper.asc /tmp
-RUN gpg1 --pgp2 --import /tmp/stamper.asc
-RUN rm /tmp/stamper.asc
-
-COPY health.sh /
+COPY stamper.asc /root/
+COPY run-autoblockchainify.sh health.sh /
+RUN mkdir /blockchain
 
 # Runtime settings
-CMD ["autoblockchainify", "--repository", "/blockchain"]
+CMD ["/run-autoblockchainify.sh", "--repository", "/blockchain"]
 HEALTHCHECK --timeout=3s CMD ["/health.sh"]

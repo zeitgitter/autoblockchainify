@@ -46,6 +46,7 @@ def finish_setup(arg):
         if not Path(repo, '.gitignore').is_file():
             with open(Path(repo, '.gitignore'), 'a') as ignore:
                 ignore.write('''pgp-timestamp.tmp
+.gnupg/
 .ssh/
 ''')
     if arg.identity is not None:
