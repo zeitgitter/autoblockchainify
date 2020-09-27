@@ -37,6 +37,8 @@ import pygit2 as git
 import autoblockchainify.config
 
 logging = _logging.getLogger('mail')
+serialize_receive = threading.Lock()
+serialize_create = threading.Lock()
 
 
 def split_host_port(host, default_port):
@@ -285,27 +287,31 @@ def check_for_stamper_mail(imap, stat, logfile):
 
 
 def wait_for_receive(logfile):
-    stat = logfile.stat()  # Should always succeed
-    logging.debug("Timestamp revision file is from %d" % stat.st_mtime)
-    (host, port) = split_host_port(autoblockchainify.config.arg.stamper_imap_server, 143)
-    with IMAP4(host=host, port=port) as imap:
-        imap.starttls()
-        imap.login(autoblockchainify.config.arg.stamper_username,
-                   autoblockchainify.config.arg.stamper_password)
-        imap.select('INBOX')
-        if not check_for_stamper_mail(imap, stat, logfile):
-            # No existing message found, wait for more incoming messages
-            # and process them until definitely okay or giving up for good
-            if 'IDLE' in imap.capabilities:
-                imap_idle(imap, stat, logfile)
-            else:
-                logging.warning("IMAP server does not support IDLE")
-                # Poll every minute, for 10 minutes
-                for i in range(10):
-                    time.sleep(60)
-                    if check_for_stamper_mail(imap, stat, logfile):
-                        return
-                logging.error("No response received, giving up")
+    with serialize_receive:
+        if not logfile.is_file():
+            logging.warning("Logfile vanished. Double mail receive thread?")
+            return
+        stat = logfile.stat()
+        logging.debug("Timestamp revision file is from %d" % stat.st_mtime)
+        (host, port) = split_host_port(autoblockchainify.config.arg.stamper_imap_server, 143)
+        with IMAP4(host=host, port=port) as imap:
+            imap.starttls()
+            imap.login(autoblockchainify.config.arg.stamper_username,
+                       autoblockchainify.config.arg.stamper_password)
+            imap.select('INBOX')
+            if not check_for_stamper_mail(imap, stat, logfile):
+                # No existing message found, wait for more incoming messages
+                # and process them until definitely okay or giving up for good
+                if 'IDLE' in imap.capabilities:
+                    imap_idle(imap, stat, logfile)
+                else:
+                    logging.warning("IMAP server does not support IDLE")
+                    # Poll every minute, for 10 minutes
+                    for i in range(10):
+                        time.sleep(60)
+                        if check_for_stamper_mail(imap, stat, logfile):
+                            return
+                    logging.error("No response received, giving up")
 
 
 def async_email_timestamp(resume=False):
@@ -333,8 +339,9 @@ def async_email_timestamp(resume=False):
         new_rev = ("git commit %s\nTimestamp requested at %s\n" %
                    (head.target.hex,
                     strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))
-        with logfile.open('w') as f:
-            f.write(new_rev)
+        with serialize_create:
+            with logfile.open('w') as f:
+                f.write(new_rev)
         send(new_rev)
     threading.Thread(target=wait_for_receive, args=(logfile,),
                      daemon=True).start()
