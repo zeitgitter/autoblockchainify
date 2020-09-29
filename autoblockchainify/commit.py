@@ -115,7 +115,7 @@ def do_commit():
         # try to not interfere with the manual process and wait for the
         # next forced update
         if ((has_changes(repo) and not pending_merge(repo))
-                or head_older_than(repo, force_interval):
+                or head_older_than(repo, force_interval)):
             # 1. Commit
             commit_current_state(repo)
 
