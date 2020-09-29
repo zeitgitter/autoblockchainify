@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 0.9.1+ - [Unreleased]
 ## Added
+- Suspend "normal" (non-forced) commits during merge, in order to not
+  interfere with manual maintenance processes
 
 ## Fixed
 - Handle that `.gnupg` also is in the volume now

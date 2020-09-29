@@ -61,6 +61,11 @@ def has_changes(repo):
     return len(ret.stdout) > 0
 
 
+def pending_merge(repo):
+    """Check whether there is a pending merge."""
+    return Path(repo, '.git', 'MERGE_HEAD').is_file()
+
+
 def commit_current_state(repo):
     """Force a commit; will be called only if a commit has to be made.
     I.e., if there really are changes or the force duration has expired."""
@@ -93,6 +98,8 @@ def do_commit():
        * there is anything uncommitted, or
        * more than FORCE_AFTER_INTERVALS intervals have passed since the
          most recent commit.
+       * Normal (non-forced) commits are suspended while a merge (=manual)
+         operation is in progress.
     2. Timestamp using HTTPS (synchronous)
     3. (Optionally) push
     4. (Optionally) cross-timestamp using email (asynchronous), if the previous
@@ -104,7 +111,11 @@ def do_commit():
         * (autoblockchainify.config.arg.force_after_intervals - 0.05))
     try:
         repo = autoblockchainify.config.arg.repository
-        if has_changes(repo) or head_older_than(repo, force_interval):
+        # If a merge (a manual process on the repository) is detected,
+        # try to not interfere with the manual process and wait for the
+        # next forced update
+        if ((has_changes(repo) and not pending_merge(repo))
+                or head_older_than(repo, force_interval):
             # 1. Commit
             commit_current_state(repo)
 
