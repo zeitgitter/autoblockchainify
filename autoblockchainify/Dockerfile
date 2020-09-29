@@ -30,5 +30,7 @@ COPY run-autoblockchainify.sh health.sh /
 RUN mkdir /blockchain
 
 # Runtime settings
+# Prevent `git timestamp` from creating `~/.gitconfig`
+ENV FORCE_GIT_REPO_CONFIG=1
 CMD ["/run-autoblockchainify.sh", "--repository", "/blockchain"]
 HEALTHCHECK --timeout=3s CMD ["/health.sh"]

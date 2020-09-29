@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Added
 - Suspend "normal" (non-forced) commits during merge, in order to not
   interfere with manual maintenance processes
+- Prevent `git timestamp` > 1.0.3 from creating `~/.gitconfig`; instead, it
+  will record key IDs in `~/.git/config`, keeping the blockchain cleaner
 
 ## Fixed
 - Handle that `.gnupg` also is in the volume now
