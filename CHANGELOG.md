@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Fixed
 - Handle that `.gnupg` also is in the volume now
+- Send out mail only every force interval. Also, do not trigger immediate
+  addition of a mail reply only, avoiding double commits/timestamps every
+  force interval on idle repositories.
 
 ## Changed
 

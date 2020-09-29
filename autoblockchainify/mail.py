@@ -314,7 +314,19 @@ def wait_for_receive(logfile):
                     logging.error("No response received, giving up")
 
 
-def async_email_timestamp(resume=False):
+def not_modified_in(file, wait):
+    """Has `logfile` not been modified in ~`wait` seconds?
+    Non-existent file is considered to *not* fulfill this."""
+    try:
+        stat = file.stat()
+        mtime = datetime.utcfromtimestamp(stat.st_mtime)
+        now = datetime.utcnow()
+        return mtime + wait < now
+    except FileNotFoundError:
+        return False
+
+
+def async_email_timestamp(resume=False, wait=None):
     """If called with `resume=True`, tries to resume waiting for the mail"""
     path = autoblockchainify.config.arg.repository
     repo = git.Repository(path)
@@ -326,6 +338,7 @@ def async_email_timestamp(resume=False):
         return
     head = repo.head
     logfile = Path(path, 'pgp-timestamp.tmp')
+    sigfile = Path(path, 'pgp-timestamp.sig')
     if resume:
         if not logfile.is_file():
             logging.info("Not resuming mail timestamp: No pending mail reply")
@@ -336,12 +349,15 @@ def async_email_timestamp(resume=False):
             logging.info("Not resuming mail timestamp: No revision info")
             return
     else:  # Fresh request
-        new_rev = ("git commit %s\nTimestamp requested at %s\n" %
-                   (head.target.hex,
-                    strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))
-        with serialize_create:
-            with logfile.open('w') as f:
-                f.write(new_rev)
-        send(new_rev)
-    threading.Thread(target=wait_for_receive, args=(logfile,),
-                     daemon=True).start()
+        # No recent attempts or results for mail timestamping
+        if (not sigfile.is_file() or not_modified_in(logfile, wait)
+                or not_modified_in(sigfile, wait)):
+            new_rev = ("git commit %s\nTimestamp requested at %s\n" %
+                       (head.target.hex,
+                        strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))
+            with serialize_create:
+                with logfile.open('w') as f:
+                    f.write(new_rev)
+                send(new_rev)
+        threading.Thread(target=wait_for_receive, args=(logfile,),
+                         daemon=True).start()
