@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 0.9.1+ - [Unreleased]
+# 0.9.2 - 2020-10-02
 ## Added
 - Suspend "normal" (non-forced) commits during merge, in order to not
   interfere with manual maintenance processes
@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Fixed
 - Handle that `.gnupg` also is in the volume now
+- Send out mail only every force interval. Also, do not trigger immediate
+  addition of a mail reply only, avoiding double commits/timestamps every
+  force interval on idle repositories.
 
 ## Changed
 

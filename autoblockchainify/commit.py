@@ -20,8 +20,9 @@
 
 # Committing to git and obtaining timestamps
 
-import datetime
+from datetime import datetime, timezone
 import logging as _logging
+from pathlib import Path
 import subprocess
 import sys
 import threading
@@ -53,12 +54,15 @@ def cross_timestamp(repo, branch, server):
                          % (branch, server))
 
 
-def has_changes(repo):
+def has_user_changes(repo):
     """Check whether there are uncommitted changes, i.e., whether
-    `git status -z` has any output."""
+    `git status -z` has any output. A modification of only `pgp-timestamp.sig`
+    is ignored, as it is neither necessary nor desirable to trigger on it:
+    (a) our own timestamp is not really needed on it and
+    (b) it would cause an unnecessary second timestamp per idle force period."""
     ret = subprocess.run(['git', 'status', '-z'],
                          cwd=repo, capture_output=True, check=True)
-    return len(ret.stdout) > 0
+    return len(ret.stdout) > 0 and ret.stdout != b' M pgp-timestamp.sig\0'
 
 
 def pending_merge(repo):
@@ -69,7 +73,7 @@ def pending_merge(repo):
 def commit_current_state(repo):
     """Force a commit; will be called only if a commit has to be made.
     I.e., if there really are changes or the force duration has expired."""
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.now(timezone.utc)
     nowstr = now.strftime('%Y-%m-%d %H:%M:%S UTC')
     subprocess.run(['git', 'add', '.'],
                    cwd=repo, check=True)
@@ -85,9 +89,9 @@ def head_older_than(repo, duration):
     r = git.Repository(repo)
     if r.head_is_unborn:
         return False
-    now = datetime.datetime.utcnow()
-    if datetime.datetime.utcfromtimestamp(r.head.peel().commit_time) + duration < now:
-        return True
+    now = datetime.utcnow()
+    return datetime.utcfromtimestamp(
+        r.head.peel().commit_time) + duration < now
 
 
 def do_commit():
@@ -108,18 +112,18 @@ def do_commit():
     # Allow 5% of an interval tolerance, such that small timing differences
     # will not lead to lengthening the duration by one commit_interval
     force_interval = (autoblockchainify.config.arg.commit_interval
-        * (autoblockchainify.config.arg.force_after_intervals - 0.05))
+                      * (autoblockchainify.config.arg.force_after_intervals - 0.05))
     try:
         repo = autoblockchainify.config.arg.repository
         # If a merge (a manual process on the repository) is detected,
         # try to not interfere with the manual process and wait for the
         # next forced update
-        if ((has_changes(repo) and not pending_merge(repo))
+        if ((has_user_changes(repo) and not pending_merge(repo))
                 or head_older_than(repo, force_interval)):
             # 1. Commit
             commit_current_state(repo)
 
-            # 2. Timestamp using Zeitgitter
+            # 2. Timestamp (synchronously) using Zeitgitter
             repositories = autoblockchainify.config.arg.push_repository
             branches = autoblockchainify.config.arg.push_branch
             for r in autoblockchainify.config.arg.zeitgitter_servers:
@@ -132,15 +136,14 @@ def do_commit():
                 logging.info("Pushing upstream to %s" % r)
                 push_upstream(repo, r, branches)
 
-            # 4. Timestamp by mail (asynchronous)
+            # 4. Timestamp by mail (asynchronously)
             if autoblockchainify.config.arg.stamper_own_address:
-                logging.info("cross-timestamping by mail")
-                autoblockchainify.mail.async_email_timestamp()
+                autoblockchainify.mail.async_email_timestamp(wait=force_interval)
 
-            logging.info("do_commit done")
+        logging.info("do_commit done")
     except Exception as e:
         logging.error("Unhandled exception in do_commit() thread: %s: %s" %
-                (e, ''.join(traceback.format_tb(sys.exc_info()[2]))))
+                      (e, ''.join(traceback.format_tb(sys.exc_info()[2]))))
 
 
 def loop():
