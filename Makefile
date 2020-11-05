@@ -65,6 +65,7 @@ VERSIONTAGS = $(shell sed -n -e 's,^VERSION = .\(\([0-9].[0-9]\).[0-9]\).$$,-t $
 PLATFORMS  = linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
 
 docker-multiarch: qemu buildx docker-multiarch-builder gen-docker-dev
+	docker login
 	docker buildx build --builder docker-multiarch --pull --push \
 		--platform ${PLATFORMS} ${VERSIONTAGS} \
 		-t ${BASETAG}:latest autoblockchainify
