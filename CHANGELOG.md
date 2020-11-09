@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 0.9.2+ - [Unreleased]
+## Added
+
+## Fixed
+
+## Changed
+- The interval defaults (10m with changes, at least once every 1h)
+  in the configuration have been adopted to what is documented.
+
+
 # 0.9.2 - 2020-10-02
 ## Added
 - Suspend "normal" (non-forced) commits during merge, in order to not

@@ -74,14 +74,12 @@ def get_args(args=None, config_file_contents=None):
 
     # Stamping
     parser.add_argument('--commit-interval',
-                        default='1h',
-                        help="how often to commit")
+                        default='10m',
+                        help="how often to commit, if there have been changes")
     parser.add_argument('--commit-offset',
                         help="""when to commit within that interval; e.g. after
-                            37m19.3s. Default: Random choice in the interval.
-                            For a production server, please fix a value in
-                            the config file to avoid it jumping after every
-                            restart.""")
+                            7m19.3s. Default: Random choice in the interval,
+                            avoiding the first/last 5%.""")
     parser.add_argument('--force-after-intervals',
                         type=int,
                         default=6,
