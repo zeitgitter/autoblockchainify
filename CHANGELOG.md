@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Added
 
 ## Fixed
+- Docker health check failed due to missing `wget`
 
 ## Changed
 - The interval defaults (10m with changes, at least once every 1h)
