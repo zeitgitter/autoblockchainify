@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Changed
 - The interval defaults (10m with changes, at least once every 1h)
   in the configuration have been adopted to what is documented.
+- Docker image is now based on `debian:buster-slim`. As the same number of
+  packages (171) has to be added on top of it, starting with the smaller image
+  is preferable. (See [#0.9.6---2020-08-13](v0.9.6 below) for why not using one
+  of the `python` base images.)
+- Default for `--push-branch` is now `*`, meaning `--all` (which cannot be
+  expressed in the config file)
 
 
 # 0.9.2 - 2020-10-02
