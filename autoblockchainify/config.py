@@ -90,10 +90,12 @@ def get_args(args=None, config_file_contents=None):
                         help="""path to the GIT repository (default '.')""")
     parser.add_argument('--zeitgitter-servers',
                         default=
-                            'diversity-timestamps=https://diversity.zeitgitter.net'
-                            ' gitta-timestamps=https://gitta.zeitgitter.net',
-                        help="""any number of <branch>=<URL> tuples of
-                            Zeitgitter timestampers""")
+                        'diversity gitta',
+                        help="""any number of space-separated
+                             Zeitgitter servers of the form
+                             `[<branch>=]<server>`. The server name will
+                             be passed with `--server` to `git timestamp`,
+                             the (optional) branch name with `--branch`.""")
 
     # Pushing
     parser.add_argument('--push-repository',
@@ -192,11 +194,6 @@ def get_args(args=None, config_file_contents=None):
         arg.push_branch = ['--all']
     else:
         arg.push_branch = arg.push_branch.split()
-
-    for i in arg.zeitgitter_servers:
-        if not '=' in i:
-            sys.exit("--upstream-timestamp requires (space-separated list of)"
-                " <branch>=<url> arguments")
 
     if not arg.no_dovecot_bug_workaround:
         arg.stamper_from = arg.stamper_from[:-1] # See help text

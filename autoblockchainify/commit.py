@@ -45,13 +45,10 @@ def push_upstream(repo, to, branches):
         logging.error("'git push %s %s' failed" % (to, ' '.join(branches)))
 
 
-def cross_timestamp(repo, branch, server):
-    ret = subprocess.run(['git', 'timestamp',
-                          '--branch', branch, '--server', server],
-                         cwd=repo)
+def cross_timestamp(repo, options):
+    ret = subprocess.run(['git', 'timestamp'] + options, cwd=repo)
     if ret.returncode != 0:
-        sys.stderr.write("git timestamp --branch %s --server %s failed"
-                         % (branch, server))
+        sys.stderr.write("git timestamp %s failed" % (' '.join(options)))
 
 
 def has_user_changes(repo):
@@ -127,9 +124,12 @@ def do_commit():
             repositories = autoblockchainify.config.arg.push_repository
             branches = autoblockchainify.config.arg.push_branch
             for r in autoblockchainify.config.arg.zeitgitter_servers:
-                logging.info("Cross-timestamping %s" % r)
-                (branch, server) = r.split('=', 1)
-                cross_timestamp(repo, branch, server)
+                if '=' in r:
+                    (branch, server) = r.split('=', 1)
+                    cross_timestamp(repo, ['--branch', branch,
+                        '--server', server])
+                else:
+                    cross_timestamp(repo, ['--server', r])
 
             # 3. Push
             for r in repositories:

@@ -4,6 +4,7 @@ DAEMONPARAMS	= \
 	--commit-interval 1m \
 	--commit-offset 30s \
 	--force-after-intervals 10 \
+	--zeitgitter-servers "gitta diversity zeitgitter.proxmox.by alpeinsoft-timestamps=https://zeitgitter.alpeinsoft.ch" \
 	--repository ${DAEMONTEMP}
 # To check that environment variables are also consulted
 DAEMONENV	= AUTOBLOCKCHAINIFY_IDENTITY="Test User <test@user.example>"
