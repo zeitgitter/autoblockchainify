@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 0.9.2+ - [Unreleased]
 ## Added
+- On restart, tries to resume waiting for a mail response from PGP Digital
+  Timestamping Service (was added some versions ago, but never documented)
+- Timespans may also indicate the number of weeks now (e.g.,
+  "1w 2d 8h 40m 3.5s")
 
 ## Fixed
 - Docker health check failed due to missing `wget`
