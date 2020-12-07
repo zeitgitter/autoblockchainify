@@ -188,10 +188,10 @@ def get_args(args=None, config_file_contents=None):
     arg.zeitgitter_servers = arg.zeitgitter_servers.split()
 
     # and working around the problem that values cannot start with `-`.
-    arg.push_repository = arg.push_repository.split()
-    arg.push_branch = arg.push_branch.split()
     if arg.push_branch == '*':
-        arg.push_branch = '--all'
+        arg.push_branch = ['--all']
+    else:
+        arg.push_branch = arg.push_branch.split()
 
     for i in arg.zeitgitter_servers:
         if not '=' in i:

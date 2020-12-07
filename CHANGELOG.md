@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Timestamping Service (was added some versions ago, but never documented)
 - Timespans may also indicate the number of weeks now (e.g.,
   "1w 2d 8h 40m 3.5s")
+- Add support to push all branches using `push_branch=*` (see also *Changes*
+  below)
 
 ## Fixed
 - Docker health check failed due to missing `wget`
