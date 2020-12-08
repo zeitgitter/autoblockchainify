@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 0.9.2+ - [Unreleased]
 ## Added
+- `--upstream-sleep` allows to sleep between upstream timestamps, e.g.
+  to ensure a consistent ordering of cross-timestamping events for each
+  commit.
+- Time intervals (such as "5m3.5s") may skip the seconds indication, `s`.
+  So `--upstream-sleep=0` is also valid.
 - On restart, tries to resume waiting for a mail response from PGP Digital
   Timestamping Service (was added some versions ago, but never documented)
 - Timespans may also indicate the number of weeks now (e.g.,

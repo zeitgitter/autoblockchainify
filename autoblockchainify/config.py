@@ -96,6 +96,10 @@ def get_args(args=None, config_file_contents=None):
                              `[<branch>=]<server>`. The server name will
                              be passed with `--server` to `git timestamp`,
                              the (optional) branch name with `--branch`.""")
+    parser.add_argument('--upstream-sleep',
+                        default='0s',
+                        help="""Delay between cross-timestamping for the
+                             different timestampers""")
 
     # Pushing
     parser.add_argument('--push-repository',
@@ -185,6 +189,11 @@ def get_args(args=None, config_file_contents=None):
         sys.exit("--commit-offset must be positive")
     if arg.commit_offset >= arg.commit_interval:
         sys.exit("--commit-offset must be less than --commit-interval")
+
+    arg.zeitgitter_sleep = zeitgitter.deltat.parse_time(arg.zeitgitter_sleep)
+
+    if arg.domain is None:
+        arg.domain = arg.own_url.replace('https://', '')
 
     # Work around ConfigArgParse list bugs by implementing lists ourselves
     arg.zeitgitter_servers = arg.zeitgitter_servers.split()

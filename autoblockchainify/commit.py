@@ -124,12 +124,14 @@ def do_commit():
             repositories = autoblockchainify.config.arg.push_repository
             branches = autoblockchainify.config.arg.push_branch
             for r in autoblockchainify.config.arg.zeitgitter_servers:
+                logging.info("Cross-timestamping %s" % r)
                 if '=' in r:
                     (branch, server) = r.split('=', 1)
                     cross_timestamp(repo, ['--branch', branch,
                         '--server', server])
                 else:
                     cross_timestamp(repo, ['--server', r])
+                time.sleep(zeitgitter.config.arg.zeitgitter_sleep.total_seconds())
 
             # 3. Push
             for r in repositories:
