@@ -1,5 +1,7 @@
 #!/usr/bin/python3
+import os
 import re
+import subprocess
 
 import setuptools
 
@@ -16,12 +18,29 @@ def extract_version(filename):
     exit("Cannot extract version number from %s" % filename)
 
 
+def describe_or_extract_version(filename):
+    if 'FORCE_VERSION' in os.environ:
+        return os.environ['FORCE_VERSION']
+    ret = subprocess.run(['git', 'describe'], capture_output=True, text=True)
+    if ret.returncode != 0:
+        return extract_version(filename)
+    else:
+        match = re.match('^v?([0-9]+.[0-9]+.[0-9]+)(-([0-9]+))?', ret.stdout)
+        if match:
+            if match[3] is None:
+                return match[1]
+            else:
+                return match[1] + '.post' + match[3]
+        else:
+            return extract_version(filename)
+
+
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="autoblockchainify",
-    version=extract_version('autoblockchainify/version.py'),
+    version=describe_or_extract_version('autoblockchainify/version.py'),
     author="Marcel Waldvogel",
     author_email="marcel.waldvogel@trifence.ch",
     description="Turn a directory into a git-based Blockchain",

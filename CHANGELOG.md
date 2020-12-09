@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 0.9.4+ - [Unreleased]
+## Added
+
+## Fixed
+
+## Changed
+- Version numbers of non-tagged versions now end in `.postX`, where `X` is the
+  number of commits since the tag (unless overridden by `FORCE_VERSION`
+  environment variable).
+
+
 # 0.9.4 - 2020-12-09
 ## Added
 - Documentation in the config files for `--zeitgitter-sleep`
