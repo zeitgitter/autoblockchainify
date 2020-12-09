@@ -96,7 +96,7 @@ def get_args(args=None, config_file_contents=None):
                              `[<branch>=]<server>`. The server name will
                              be passed with `--server` to `git timestamp`,
                              the (optional) branch name with `--branch`.""")
-    parser.add_argument('--upstream-sleep',
+    parser.add_argument('--zeitgitter-sleep',
                         default='0s',
                         help="""Delay between cross-timestamping for the
                              different timestampers""")
@@ -190,13 +190,11 @@ def get_args(args=None, config_file_contents=None):
     if arg.commit_offset >= arg.commit_interval:
         sys.exit("--commit-offset must be less than --commit-interval")
 
-    arg.zeitgitter_sleep = zeitgitter.deltat.parse_time(arg.zeitgitter_sleep)
-
-    if arg.domain is None:
-        arg.domain = arg.own_url.replace('https://', '')
+    arg.zeitgitter_sleep = autoblockchainify.deltat.parse_time(arg.zeitgitter_sleep)
 
     # Work around ConfigArgParse list bugs by implementing lists ourselves
     arg.zeitgitter_servers = arg.zeitgitter_servers.split()
+    arg.push_repository = arg.push_repository.split()
 
     # and working around the problem that values cannot start with `-`.
     if arg.push_branch == '*':

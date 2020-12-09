@@ -131,7 +131,7 @@ def do_commit():
                         '--server', server])
                 else:
                     cross_timestamp(repo, ['--server', r])
-                time.sleep(zeitgitter.config.arg.zeitgitter_sleep.total_seconds())
+                time.sleep(autoblockchainify.config.arg.zeitgitter_sleep.total_seconds())
 
             # 3. Push
             for r in repositories:

@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 0.9.4 - 2020-12-09
+## Added
+- Documentation in the config files for `--zeitgitter-sleep`
+
+## Fixed
+- Copy-paste like rebase problems with `--zeitgitter-sleep`,
+  `--push-repository`, and `--domain` leading to termination; releasing hotfix
+
+## Changed
+
+
 # 0.9.3 - 2020-12-09
 ## Added
 - `--zeigitter-sleep` allows to sleep between upstream timestamps, e.g.
