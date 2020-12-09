@@ -5,13 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 0.9.2+ - [Unreleased]
+# 0.9.3 - 2020-12-09
 ## Added
-- `--upstream-sleep` allows to sleep between upstream timestamps, e.g.
+- `--zeigitter-sleep` allows to sleep between upstream timestamps, e.g.
   to ensure a consistent ordering of cross-timestamping events for each
   commit.
 - Time intervals (such as "5m3.5s") may skip the seconds indication, `s`.
-  So `--upstream-sleep=0` is also valid.
+  So `--zeigitter-sleep=0` is also valid.
 - On restart, tries to resume waiting for a mail response from PGP Digital
   Timestamping Service (was added some versions ago, but never documented)
 - Timespans may also indicate the number of weeks now (e.g.,
@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Simplfied using multiple cross-timestampers:
   * Add support to push all branches using `--push_branch=*`, saving the need
     to list/update them all (see also *Changes* below)
-  * `--upstream-timestamp` no longer needs a branch name, if `git timestamp`
+  * `--zeigitter-timestamp` no longer needs a branch name, if `git timestamp`
     will determine it correctly. This leads to much shorter and more
     maintainable lists of cross-timestamping servers.
 
@@ -35,12 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   of the `python` base images.)
 - Default for `--push-branch` is now `*`, meaning `--all` (which cannot be
   expressed in the config file)
-- `ZEITGITTER_FAKE_TIME` (needed only for tests) is removed from the
-  environment of `git timestamp` clients that connect to cross-timestamping
-  servers specified as server name only (as opposed to `branch=server` tuples)
-  to allow both testing against our local timeserver (which does not use wall
-  clock to achieve reproducible signatures) and against real-world timeservers
-  obeying wall clock.
 
 
 # 0.9.2 - 2020-10-02
