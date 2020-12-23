@@ -4,6 +4,8 @@ DAEMONPARAMS	= \
 	--commit-interval 1m \
 	--commit-offset 30s \
 	--force-after-intervals 10 \
+	--zeitgitter-servers "gitta diversity zeitgitter.proxmox.by alpeinsoft-timestamps=https://zeitgitter.alpeinsoft.ch" \
+	--zeitgitter-sleep 2.5 \
 	--repository ${DAEMONTEMP}
 # To check that environment variables are also consulted
 DAEMONENV	= AUTOBLOCKCHAINIFY_IDENTITY="Test User <test@user.example>"
@@ -38,7 +40,7 @@ system-tests: kill-daemon
 ## Run tests with daemon
 	@for i in tests/[0-9][0-9]-*; do echo; echo ===== $$i ${DAEMONTEMP}; $$i ${DAEMONTEMP} || exit 1; done
 ## Cleanup
-#	${RM} -r ${DAEMONTEMP}
+	${RM} -r ${DAEMONTEMP}
 	killall autoblockchainify.py
 
 kill-daemon:
@@ -80,7 +82,6 @@ ${QEMUDETECT}:
 	  | (xargs docker rm 2>&1 || \
 	    echo "Cannot remove docker container on ZFS; retry after next reboot") \
 	  | grep -v 'dataset is busy'
-
 
 buildx: ${BUILDXDETECT}
 ${BUILDXDETECT}:
