@@ -50,7 +50,7 @@ setuptools.setup(
     license='AGPLv3',
     packages=setuptools.find_packages(),
     install_requires=['pygit2', 'configargparse',
-        'setuptools', 'git-timestamp'],
+        'setuptools', 'git-timestamp>=1.0.4'],
     package_data={'autoblockchainify': ['sample.conf', 'web/*']},
     python_requires='>=3.7',
     entry_points={
