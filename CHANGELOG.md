@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Version numbers of non-tagged versions now end in `.postX`, where `X` is the
   number of commits since the tag (unless overridden by `FORCE_VERSION`
   environment variable).
+- Require `git timestamp` version of at least 1.0.4
 
 
 # 0.9.4 - 2020-12-09
