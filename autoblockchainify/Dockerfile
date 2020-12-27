@@ -13,6 +13,7 @@ ARG VERSIONMATCH=
 # Explicit python3-pygit2 install is required for ARMv6 only.
 RUN apt update && \
     apt install -y gnupg1 libgit2-dev python3-pygit2 python3-pip git wget && \
+    apt clean && \
     rm -rf /var/lib/apt/lists
 
 # Verify that OS packages, Python version and Python package can interoperate
