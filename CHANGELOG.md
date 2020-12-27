@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   number of commits since the tag (unless overridden by `FORCE_VERSION`
   environment variable).
 - Require `git timestamp` version of at least 1.0.4
+- Docker image slightly smaller
 
 
 # 0.9.4 - 2020-12-09
