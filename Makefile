@@ -106,7 +106,7 @@ docker-multiarch-builder: qemu buildx
 
 # Create a docker image from the current tree
 docker-dev:gen-docker-dev
-	sudo docker build autoblockchainify-dev
+	sudo docker build --tag autoblockchainify:dev autoblockchainify-dev
 
 gen-docker-dev:python-package
 	${RM} -rf autoblockchainify-dev
