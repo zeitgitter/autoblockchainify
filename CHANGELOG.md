@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 0.9.4+ - [Unreleased]
+# 0.9.5 - 2021-01-16
 ## Added
 - Allow docker image to be built with a specific PyPI version (a feature you
   probably will not need, but is useful while developing/testing)
