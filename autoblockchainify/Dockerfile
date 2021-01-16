@@ -27,19 +27,22 @@ RUN pip3 install autoblockchainify${VERSIONMATCH} ##PRODONLY##
 ##DEVONLY## COPY autoblockchainify-*.whl /root/
 ##DEVONLY## RUN pip3 install /root/autoblockchainify-*.whl
 
-# Ensure SSH keys also survive an update
-# `usermod --home /blockchain root` refuses, as there are running procs
-RUN sed 's,:/root:,:/blockchain:,' < /etc/passwd > /etc/passwd+ && \
-    mv /etc/passwd+ /etc/passwd
+# Run as non-root (which also ensures SSH keys survive an update)
+# Use an empty home, not populated with /etc/skel.
+RUN useradd --home-dir /blockchain --create-home --skel /does/not/exist --uid 15177 blockchain
 
 # Import (old-style) PGP key for PGP Digital Timestamping Service, so it is
 # ready if anyone wants to use it
-COPY stamper.asc /root/
-COPY run-autoblockchainify.sh health.sh /
-RUN mkdir /blockchain
+COPY stamper.asc migrate.sh run.sh health.sh /
 
 # Runtime settings
 # Prevent `git timestamp` from creating `~/.gitconfig`
 ENV FORCE_GIT_REPO_CONFIG=1
-CMD ["/run-autoblockchainify.sh", "--repository", "/blockchain"]
-HEALTHCHECK --timeout=3s CMD ["/health.sh"]
+
+# Run the start script as root during a transition phase, so
+# ownership migration can be performed.
+CMD ["/migrate.sh", "blockchain", "/blockchain", "/run.sh", "--repository", "/blockchain"]
+# `USER` applies to all commands executed after the directive, so it applies to
+# `CMD`, even if `CMD` is above. So have to disable it during migration.
+#USER blockchain
+HEALTHCHECK --timeout=3s CMD ["su", "blockchain", "/health.sh"]
