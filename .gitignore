@@ -5,6 +5,5 @@ dist
 *.egg-info
 # Locally modified copy of sample.env:
 autoblockchainify.env
-dev.env
 autoblockchainify-dev/
 blockchain-dev/

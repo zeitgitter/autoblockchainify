@@ -9,15 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Added
 - Allow docker image to be built with a specific PyPI version (a feature you
   probably will not need, but is useful while developing/testing)
+- Direct ability to run development docker
 
 ## Fixed
 
 ## Changed
 - Version numbers of non-tagged versions now end in `.postX`, where `X` is the
   number of commits since the tag (unless overridden by `FORCE_VERSION`
-  environment variable).
+  environment variable)
 - Require `git timestamp` version of at least 1.0.4
 - Docker image slightly smaller
+- Docker processes run as user `blockchain` for more defensive security
+- During a transition phase, there will be an ownership change for the
+  `/blockchain` directory subtree (will be triggered if that directory is not
+  writable by the user `blockchain`)
 
 
 # 0.9.4 - 2020-12-09
