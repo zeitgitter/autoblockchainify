@@ -3,7 +3,7 @@ version: "2"
 services:
   autoblockchainify-dev:
     restart: unless-stopped
-    image: zeitgitter/autoblockchainify-dev
+    image: autoblockchainify:dev
     build: ./autoblockchainify-dev
     container_name: autoblockchainify-dev
     env_file:
