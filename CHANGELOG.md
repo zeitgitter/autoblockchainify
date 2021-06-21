@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 # 0.9.5+ - [Unpublished]
 ## Added
 - Name and print threads for debugging
+- Allow additional daemon paramaters (e.g., `--debug-level XDEBUG`) to be
+  passed to `make test`
 
 ## Fixed
 

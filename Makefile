@@ -6,7 +6,8 @@ DAEMONPARAMS	= \
 	--force-after-intervals 10 \
 	--zeitgitter-servers "gitta diversity zeitgitter.proxmox.by alpeinsoft-timestamps=https://zeitgitter.alpeinsoft.ch" \
 	--zeitgitter-sleep 2.5 \
-	--repository ${DAEMONTEMP}
+	--repository ${DAEMONTEMP} \
+	${EXTRA_DAEMONPARAMS}
 # To check that environment variables are also consulted
 DAEMONENV	= AUTOBLOCKCHAINIFY_IDENTITY="Test User <test@user.example>"
 
