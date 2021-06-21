@@ -143,7 +143,8 @@ def do_commit():
             if autoblockchainify.config.arg.stamper_own_address:
                 autoblockchainify.mail.async_email_timestamp(wait=force_interval)
 
-        logging.info("do_commit done")
+        logging.info("do_commit done at " +
+                datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
     except Exception as e:
         logging.error("Unhandled exception in do_commit() thread: %s: %s" %
                       (e, ''.join(traceback.format_tb(sys.exc_info()[2]))))
