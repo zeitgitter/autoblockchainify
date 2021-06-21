@@ -29,7 +29,7 @@ import autoblockchainify.commit
 import autoblockchainify.config
 import autoblockchainify.version
 
-
+# Add XDEBUG (5) level and logging.xdebug() method
 def xdebug(self, msg, *args, **kwargs):
     self.log(xdebug_level, msg, *args, **kwargs)
 
