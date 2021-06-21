@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 #
-# zeitgitterd — Independent GIT Timestamping, HTTPS server
+# autoblockchainify — Turn a directory into a GIT Blockchain
 #
-# Copyright (C) 2019,2020 Marcel Waldvogel
+# Copyright (C) 2019-2021 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
