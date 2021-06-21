@@ -10,7 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Name and print threads for debugging
 - Allow additional daemon paramaters (e.g., `--debug-level XDEBUG`) to be
   passed to `make test`
-- Additional debug level `XDEBUG` ("excessive debug")
+- Additional debug level `XDEBUG` ("excessive debug"). If you want your
+  configuration to be backward-compatible, do not use `--debug-level XDEBUG`,
+  which will raise an exception at start of older versions, but
+  `--debug-level 3`.
 
 ## Fixed
 
