@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Changed
 - Commit messages now use "🔗" emoji directly instead of ":link:"
+- Streamlined logging messages
 
 
 # 0.9.5 - 2021-01-16

@@ -54,7 +54,6 @@ def send(body, subject='Stamping request', to=None):
     # (are bound too early? At load time instead of at call time?)
     if to is None:
         to = autoblockchainify.config.arg.stamper_to
-    logging.debug('SMTP server %s' % autoblockchainify.config.arg.stamper_smtp_server)
     (host, port) = split_host_port(autoblockchainify.config.arg.stamper_smtp_server, 587)
     with SMTP(host, port=port) as smtp:
         smtp.starttls()
@@ -69,6 +68,7 @@ Subject: %s
 
 %s""" % (frm, to, date, subject, body)
         smtp.sendmail(frm, to, msg)
+        logging.info("Timestamping request mailed")
 
 
 def extract_pgp_body(body):
@@ -81,7 +81,7 @@ def extract_pgp_body(body):
     start = None
     for i in range(0, len(lines)):
         if lines[i] == '-----BEGIN PGP SIGNED MESSAGE-----':
-            logging.debug("Found start at %d: %s" % (i, lines[i]))
+            logging.debug("Found start at line %d: %s" % (i, lines[i]))
             start = i
             break
     else:
@@ -90,7 +90,7 @@ def extract_pgp_body(body):
     end = None
     for i in range(start, len(lines)):
         if lines[i] == '-----END PGP SIGNATURE-----':
-            logging.debug("Found end at %d: %s" % (i, lines[i]))
+            logging.debug("Found end at line %d: %s" % (i, lines[i]))
             end = i
             break
     else:
@@ -130,26 +130,25 @@ def body_signature_correct(bodylines, stat):
                          env=env, input=body.encode('ASCII'),
                          stderr=subprocess.PIPE)
     stderr = maybe_decode(res.stderr)
-    logging.debug(stderr)
+    logging.info(stderr)
     if res.returncode != 0:
         logging.warning("gpg1 return code %d (%r)" % (res.returncode, stderr))
         return False
     if '\ngpg: Good signature' not in stderr:
-        logging.warning("Not good signature (%r)" % stderr)
+        logging.warning("Missing good signature (%r)" % stderr)
         return False
     if not stderr.startswith('gpg: Signature made '):
-        logging.warning("Signature not made (%r)" % stderr)
+        logging.warning("No signature made (%r)" % stderr)
         return False
     if not ((' key ID %s\n' % autoblockchainify.config.arg.stamper_keyid)
             in stderr):
-        logging.warning("Wrong KeyID (%r)" % stderr)
+        logging.warning("Signature by wrong KeyID (%r)" % stderr)
         return False
     try:
-        logging.debug(stderr[24:48])
         sigtime = datetime.strptime(stderr[24:48], "%b %d %H:%M:%S %Y %Z")
         logging.debug(sigtime)
     except ValueError:
-        logging.warning("Illegal date (%r)" % stderr)
+        logging.warning("Illegal signature date format %r (%r)" % (stderr[24:48], stderr))
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
         logging.warning("Signature time %s lies more than 30 seconds in the future"
@@ -176,7 +175,7 @@ def verify_body_and_save_signature(body, stat, logfile, msgno):
         return False
     else:
         (before, after) = res
-        logging.debug("before %d, after %d" % (before, after))
+        logging.debug("Message wrapped in %d lines before, %d after" % (before, after))
         if before > 20 or after > 20:
             logging.warning("Too many lines added by the PGP Timestamping Server"
                             " before (%d)/after (%d) our contents" % (before, after))
@@ -236,11 +235,11 @@ def file_unchanged(stat, logfile):
 def imap_idle(imap, stat, logfile):
     while True:
         imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
-        logging.info("IMAP waiting for IDLE response")
+        logging.info("IMAP idling")
         line = imap.readline().strip()
         logging.debug("IMAP IDLE → %s" % line)
         if line != b'+ idling':
-            logging.info("IMAP IDLE unsuccessful")
+            logging.error("IMAP IDLE unsuccessful")
             return False
         # Wait for new message
         while file_unchanged(stat, logfile):
@@ -280,7 +279,7 @@ def check_for_stamper_mail(imap, stat, logfile):
                 remaining_msgids = remaining_msgids[1:]
                 logging.debug("IMAP FETCH BODY (%s) → %s…" % (msgid, m[1][:20]))
                 if verify_body_and_save_signature(m[1], stat, logfile, msgid):
-                    logging.info("Verify_body() succeeded; deleting %s" % msgid)
+                    logging.info("Successful answer in message #%s; deleting" % msgid)
                     imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
     return False
@@ -356,6 +355,7 @@ def async_email_timestamp(resume=False, wait=None):
             new_rev = ("git commit %s\nTimestamp requested at %s\n" %
                        (head.target.hex,
                         strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))
+            logging.debug("Creating logfile with: %s" % new_rev)
             with serialize_create:
                 with logfile.open('w') as f:
                     f.write(new_rev)
