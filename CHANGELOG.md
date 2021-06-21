@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 0.9.5+ - [Unpublished]
 ## Added
+- Name and print threads for debugging
 
 ## Fixed
 
