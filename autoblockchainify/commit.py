@@ -75,7 +75,7 @@ def commit_current_state(repo):
     subprocess.run(['git', 'add', '.'],
                    cwd=repo, check=True)
     subprocess.run(['git', 'commit', '--allow-empty',
-                    '-m', ":link: Autoblockchainify data as of " + nowstr],
+                    '-m', "🔗 Autoblockchainify data as of " + nowstr],
                    cwd=repo, check=True)
 
 
