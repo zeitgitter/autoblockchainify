@@ -106,7 +106,7 @@ def do_commit():
     4. (Optionally) cross-timestamp using email (asynchronous), if the previous
        email has been sent more than FORCE_AFTER_INTERVALS ago. The response
        will be added to a future commit."""
-    logging.debug("do_commit with threads " + str(threading.enumerate()))
+    logging.xdebug("do_commit with threads " + str(threading.enumerate()))
     # Allow 5% of an interval tolerance, such that small timing differences
     # will not lead to lengthening the duration by one commit_interval
     force_interval = (autoblockchainify.config.arg.commit_interval
@@ -146,8 +146,7 @@ def do_commit():
         logging.info("do_commit done at " +
                 datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
     except Exception as e:
-        logging.error("Unhandled exception in do_commit() thread: %s: %s" %
-                      (e, ''.join(traceback.format_tb(sys.exc_info()[2]))))
+        logging.exception("Unhandled exception in commit thread")
 
 
 def loop():
