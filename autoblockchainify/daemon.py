@@ -29,7 +29,15 @@ import autoblockchainify.commit
 import autoblockchainify.config
 import autoblockchainify.version
 
+
+def xdebug(self, msg, *args, **kwargs):
+    self.log(xdebug_level, msg, *args, **kwargs)
+
+
 logging = _logging.getLogger('daemon')
+xdebug_level = _logging.DEBUG//2
+_logging.addLevelName(xdebug_level, 'XDEBUG')
+setattr(_logging.Logger, 'xdebug', xdebug)
 
 
 def finish_setup(arg):
