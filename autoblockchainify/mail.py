@@ -99,6 +99,7 @@ def extract_pgp_body(body):
 
 
 def save_signature(bodylines, logfile):
+    logging.debug("save_signature()")
     repo = autoblockchainify.config.arg.repository
     ascfile = Path(repo, 'pgp-timestamp.sig')
     with ascfile.open(mode='w') as f:
@@ -226,9 +227,12 @@ def body_contains_file(bodylines, logfile):
 def file_unchanged(stat, logfile):
     try:
         cur_stat = logfile.stat()
-        return (cur_stat.st_mtime == stat.st_mtime
+        unchanged = (cur_stat.st_mtime == stat.st_mtime
                 and cur_stat.st_ino == stat.st_ino)
+        logging.debug("%r unchanged: %r" % (logfile, unchanged))
+        return unchanged
     except FileNotFoundError:
+        logging.debug("%r unchanged: missing" % logfile)
         return False
 
 
@@ -328,6 +332,7 @@ def not_modified_in(file, wait):
 
 def async_email_timestamp(resume=False, wait=None):
     """If called with `resume=True`, tries to resume waiting for the mail"""
+    logging.debug("async_email_timestamp(%r, %r)" % (resume, wait))
     path = autoblockchainify.config.arg.repository
     repo = git.Repository(path)
     if repo.head_is_unborn:
@@ -345,6 +350,7 @@ def async_email_timestamp(resume=False, wait=None):
             return
         with logfile.open() as f:
             contents = f.read()
+        logging.debug("Resuming with logfile contents: %r" % contents)
         if len(contents) < 40:
             logging.info("Not resuming mail timestamp: No revision info")
             return
@@ -355,7 +361,7 @@ def async_email_timestamp(resume=False, wait=None):
             new_rev = ("git commit %s\nTimestamp requested at %s\n" %
                        (head.target.hex,
                         strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))
-            logging.debug("Creating logfile with: %s" % new_rev)
+            logging.debug("Creating logfile with: %r" % new_rev)
             with serialize_create:
                 with logfile.open('w') as f:
                     f.write(new_rev)
