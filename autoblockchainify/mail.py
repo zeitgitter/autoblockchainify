@@ -287,6 +287,7 @@ def check_for_stamper_mail(imap, stat, logfile):
 
 
 def wait_for_receive(logfile):
+    logging.debug("wait_for_receive with threads " + str(threading.enumerate()))
     with serialize_receive:
         if not logfile.is_file():
             logging.warning("Logfile vanished. Double mail receive thread?")
@@ -359,5 +360,5 @@ def async_email_timestamp(resume=False, wait=None):
                 with logfile.open('w') as f:
                     f.write(new_rev)
                 send(new_rev)
-        threading.Thread(target=wait_for_receive, args=(logfile,),
+        threading.Thread(target=wait_for_receive, args=(logfile,), name="mail",
                          daemon=True).start()
