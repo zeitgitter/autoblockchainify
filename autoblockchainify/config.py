@@ -27,8 +27,8 @@ import signale
 import os
 import sys
 import random
+import deltat
 
-import autoblockchainify.deltat
 import autoblockchainify.version
 
 
@@ -165,8 +165,7 @@ def get_args(args=None, config_file_contents=None):
     if arg.force_after_intervals < 2:
         sys.exit("--force-after-intervals must be >= 2")
 
-    arg.commit_interval = autoblockchainify.deltat.parse_time(
-        arg.commit_interval)
+    arg.commit_interval = deltat.parse_time(arg.commit_interval)
     if arg.stamper_own_address is None:
         if arg.commit_interval < datetime.timedelta(minutes=1):
             sys.exit("--commit-interval may not be shorter than 1m")
@@ -182,15 +181,13 @@ def get_args(args=None, config_file_contents=None):
         arg.commit_offset = arg.commit_interval * random.uniform(0.05, 0.95)
         logging.info("Chose --commit-offset %s" % arg.commit_offset)
     else:
-        arg.commit_offset = autoblockchainify.deltat.parse_time(
-            arg.commit_offset)
+        arg.commit_offset = deltat.parse_time(arg.commit_offset)
     if arg.commit_offset < datetime.timedelta(seconds=0):
         sys.exit("--commit-offset must be positive")
     if arg.commit_offset >= arg.commit_interval:
         sys.exit("--commit-offset must be less than --commit-interval")
 
-    arg.zeitgitter_sleep = autoblockchainify.deltat.parse_time(
-        arg.zeitgitter_sleep)
+    arg.zeitgitter_sleep = deltat.parse_time(arg.zeitgitter_sleep)
 
     # Work around ConfigArgParse list bugs by implementing lists ourselves
     arg.zeitgitter_servers = arg.zeitgitter_servers.split()
