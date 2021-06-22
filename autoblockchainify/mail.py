@@ -20,7 +20,7 @@
 
 # Sending and receiving mail
 
-from signale import Signale
+import signale
 import os
 import re
 import subprocess
@@ -36,7 +36,7 @@ import pygit2 as git
 
 import autoblockchainify.config
 
-logging = Signale({"scope": "mail"})
+logging = signale.Signale({"scope": "mail"})
 serialize_receive = threading.Lock()
 serialize_create = threading.Lock()
 
@@ -151,17 +151,17 @@ def body_signature_correct(bodylines, stat):
         logging.xdebug(sigtime)
     except ValueError:
         logging.error("Illegal signature date format %r (%r)" %
-                        (stderr[24:48], stderr))
+                      (stderr[24:48], stderr))
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
         logging.error("Signature time %s lies more than 30 seconds in the future"
-                        % sigtime)
+                      % sigtime)
         return False
     modtime = datetime.utcfromtimestamp(stat.st_mtime)
     if sigtime < modtime - timedelta(seconds=30):
-        logging.error("Signature time %s is more than 30 seconds before\n"
-                        "file modification time %s"
-                        % (sigtime, modtime))
+        logging.error("Signature time %s is more than 30 seconds before "
+                      "file modification time %s"
+                      % (sigtime, modtime))
         return False
     return True
 
@@ -182,7 +182,7 @@ def verify_body_and_save_signature(body, stat, logfile, msgno):
                       (before, after))
         if before > 20 or after > 20:
             logging.error("Too many lines added by the PGP Timestamping Server"
-                            " before (%d)/after (%d) our contents" % (before, after))
+                          " before (%d)/after (%d) our contents" % (before, after))
             return False
 
     if not body_signature_correct(bodylines, stat):
@@ -256,7 +256,7 @@ def imap_idle(imap, stat, logfile):
             match = re.match(r'^\* ([0-9]+) EXISTS$', str(line, 'ASCII'))
             if match:
                 logging.success("You have new mail %s!"
-                             % match.group(1).encode('ASCII'))
+                                % match.group(1).encode('ASCII'))
                 # Stop idling
                 imap.send(b'DONE\r\n')
                 if check_for_stamper_mail(imap, stat, logfile) is True:
@@ -288,15 +288,15 @@ def check_for_stamper_mail(imap, stat, logfile):
                               (msgid, m[1][:20]))
                 if verify_body_and_save_signature(m[1], stat, logfile, msgid):
                     logging.success(
-                        "Successful answer in message #%s; deleting" % msgid)
+                        "Successful answer in message %s; deleting" % msgid)
                     imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
     return False
 
 
 def wait_for_receive(logfile):
-    logging.xdebug("wait_for_receive with threads " +
-                   str(threading.enumerate()))
+    logging.start("wait_for_receive", level=signale.XDEBUG,
+                  suffix="Threads: " + str(threading.enumerate()))
     with serialize_receive:
         if not logfile.is_file():
             logging.warning("Logfile vanished. Double mail receive thread?")
