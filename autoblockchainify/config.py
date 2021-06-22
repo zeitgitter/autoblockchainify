@@ -23,7 +23,7 @@
 import argparse
 import configargparse
 import datetime
-import logging as _logging
+import signale
 import os
 import sys
 import random
@@ -32,7 +32,7 @@ import autoblockchainify.deltat
 import autoblockchainify.version
 
 
-logging = _logging.getLogger('config')
+logging = signale.Signale({"scope": "config"})
 
 
 def get_args(args=None, config_file_contents=None):
@@ -43,7 +43,7 @@ def get_args(args=None, config_file_contents=None):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="autoblockchainify — Turn any directory into a GIT Blockchain.",
         default_config_files=['/etc/autoblockchainify.conf',
-            os.path.join(os.getenv('HOME'), 'autoblockchainify.conf')])
+                              os.path.join(os.getenv('HOME'), 'autoblockchainify.conf')])
 
     # General
     parser.add_argument('--config-file', '-c',
@@ -89,8 +89,7 @@ def get_args(args=None, config_file_contents=None):
                         default='.',
                         help="""path to the GIT repository (default '.')""")
     parser.add_argument('--zeitgitter-servers',
-                        default=
-                        'diversity gitta',
+                        default='diversity gitta',
                         help="""any number of space-separated
                              Zeitgitter servers of the form
                              `[<branch>=]<server>`. The server name will
@@ -144,23 +143,21 @@ def get_args(args=None, config_file_contents=None):
                             `stamper-from`. Should not impact other mail
                             servers.""")
 
-    arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
+    arg = parser.parse_args(
+        args=args, config_file_contents=config_file_contents)
 
-    _logging.basicConfig()
     for level in str(arg.debug_level).split(','):
         if '=' in level:
             (logger, lvl) = level.split('=', 1)
         else:
-            logger = None # Root logger
+            logger = None  # Root logger
             lvl = level
         try:
             lvl = int(lvl)
-            lvl = _logging.WARN - lvl * (_logging.WARN - _logging.INFO)
+            lvl = signale.WARNING - lvl * (signale.WARNING - signale.INFO)
         except ValueError:
-            # Does not work in Python 3.4.0 and 3.4.1
-            # See note in https://docs.python.org/3/library/logging.html#logging.getLevelName
-            lvl = _logging.getLevelName(lvl.upper())
-        _logging.getLogger(logger).setLevel(lvl)
+            pass
+        signale.set_threshold(logger, lvl)
 
     if arg.stamper_username is None:
         arg.stamper_username = arg.stamper_own_address
@@ -168,7 +165,8 @@ def get_args(args=None, config_file_contents=None):
     if arg.force_after_intervals < 2:
         sys.exit("--force-after-intervals must be >= 2")
 
-    arg.commit_interval = autoblockchainify.deltat.parse_time(arg.commit_interval)
+    arg.commit_interval = autoblockchainify.deltat.parse_time(
+        arg.commit_interval)
     if arg.stamper_own_address is None:
         if arg.commit_interval < datetime.timedelta(minutes=1):
             sys.exit("--commit-interval may not be shorter than 1m")
@@ -184,13 +182,15 @@ def get_args(args=None, config_file_contents=None):
         arg.commit_offset = arg.commit_interval * random.uniform(0.05, 0.95)
         logging.info("Chose --commit-offset %s" % arg.commit_offset)
     else:
-        arg.commit_offset = autoblockchainify.deltat.parse_time(arg.commit_offset)
+        arg.commit_offset = autoblockchainify.deltat.parse_time(
+            arg.commit_offset)
     if arg.commit_offset < datetime.timedelta(seconds=0):
         sys.exit("--commit-offset must be positive")
     if arg.commit_offset >= arg.commit_interval:
         sys.exit("--commit-offset must be less than --commit-interval")
 
-    arg.zeitgitter_sleep = autoblockchainify.deltat.parse_time(arg.zeitgitter_sleep)
+    arg.zeitgitter_sleep = autoblockchainify.deltat.parse_time(
+        arg.zeitgitter_sleep)
 
     # Work around ConfigArgParse list bugs by implementing lists ourselves
     arg.zeitgitter_servers = arg.zeitgitter_servers.split()
@@ -203,7 +203,7 @@ def get_args(args=None, config_file_contents=None):
         arg.push_branch = arg.push_branch.split()
 
     if not arg.no_dovecot_bug_workaround:
-        arg.stamper_from = arg.stamper_from[:-1] # See help text
+        arg.stamper_from = arg.stamper_from[:-1]  # See help text
 
     logging.debug("Settings applied: %s" % str(arg))
     return arg

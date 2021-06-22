@@ -21,7 +21,7 @@
 # Committing to git and obtaining timestamps
 
 from datetime import datetime, timezone
-import logging as _logging
+from signale import Signale
 from pathlib import Path
 import subprocess
 import sys
@@ -34,7 +34,7 @@ import pygit2 as git
 import autoblockchainify.config
 import autoblockchainify.mail
 
-logging = _logging.getLogger('commit')
+logging = Signale({"scope": "commit"})
 
 
 def push_upstream(repo, to, branches):
@@ -125,7 +125,7 @@ def do_commit():
             repositories = autoblockchainify.config.arg.push_repository
             branches = autoblockchainify.config.arg.push_branch
             for r in autoblockchainify.config.arg.zeitgitter_servers:
-                logging.info("Cross-timestamping %s" % r)
+                logging.debug("Cross-timestamping %s" % r)
                 if '=' in r:
                     (branch, server) = r.split('=', 1)
                     cross_timestamp(repo, ['--branch', branch,

@@ -20,7 +20,7 @@
 
 # Sending and receiving mail
 
-import logging as _logging
+from signale import Signale
 import os
 import re
 import subprocess
@@ -36,7 +36,7 @@ import pygit2 as git
 
 import autoblockchainify.config
 
-logging = _logging.getLogger('mail')
+logging = Signale({"scope": "mail"})
 serialize_receive = threading.Lock()
 serialize_create = threading.Lock()
 
@@ -54,7 +54,8 @@ def send(body, subject='Stamping request', to=None):
     # (are bound too early? At load time instead of at call time?)
     if to is None:
         to = autoblockchainify.config.arg.stamper_to
-    (host, port) = split_host_port(autoblockchainify.config.arg.stamper_smtp_server, 587)
+    (host, port) = split_host_port(
+        autoblockchainify.config.arg.stamper_smtp_server, 587)
     with SMTP(host, port=port) as smtp:
         smtp.starttls()
         smtp.login(autoblockchainify.config.arg.stamper_username,
@@ -149,7 +150,8 @@ def body_signature_correct(bodylines, stat):
         sigtime = datetime.strptime(stderr[24:48], "%b %d %H:%M:%S %Y %Z")
         logging.xdebug(sigtime)
     except ValueError:
-        logging.warning("Illegal signature date format %r (%r)" % (stderr[24:48], stderr))
+        logging.warning("Illegal signature date format %r (%r)" %
+                        (stderr[24:48], stderr))
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
         logging.warning("Signature time %s lies more than 30 seconds in the future"
@@ -176,7 +178,8 @@ def verify_body_and_save_signature(body, stat, logfile, msgno):
         return False
     else:
         (before, after) = res
-        logging.debug("Message wrapped in %d lines before, %d after" % (before, after))
+        logging.debug("Message wrapped in %d lines before, %d after" %
+                      (before, after))
         if before > 20 or after > 20:
             logging.warning("Too many lines added by the PGP Timestamping Server"
                             " before (%d)/after (%d) our contents" % (before, after))
@@ -228,7 +231,7 @@ def file_unchanged(stat, logfile):
     try:
         cur_stat = logfile.stat()
         unchanged = (cur_stat.st_mtime == stat.st_mtime
-                and cur_stat.st_ino == stat.st_ino)
+                     and cur_stat.st_ino == stat.st_ino)
         logging.xdebug("%r unchanged: %r" % (logfile, unchanged))
         return unchanged
     except FileNotFoundError:
@@ -281,23 +284,27 @@ def check_for_stamper_mail(imap, stat, logfile):
             if m != b')':
                 msgid = remaining_msgids[0]
                 remaining_msgids = remaining_msgids[1:]
-                logging.debug("IMAP FETCH BODY (%s) → %s…" % (msgid, m[1][:20]))
+                logging.debug("IMAP FETCH BODY (%s) → %s…" %
+                              (msgid, m[1][:20]))
                 if verify_body_and_save_signature(m[1], stat, logfile, msgid):
-                    logging.info("Successful answer in message #%s; deleting" % msgid)
+                    logging.info(
+                        "Successful answer in message #%s; deleting" % msgid)
                     imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
     return False
 
 
 def wait_for_receive(logfile):
-    logging.xdebug("wait_for_receive with threads " + str(threading.enumerate()))
+    logging.xdebug("wait_for_receive with threads " +
+                   str(threading.enumerate()))
     with serialize_receive:
         if not logfile.is_file():
             logging.warning("Logfile vanished. Double mail receive thread?")
             return
         stat = logfile.stat()
         logging.debug("Timestamp revision file is from %d" % stat.st_mtime)
-        (host, port) = split_host_port(autoblockchainify.config.arg.stamper_imap_server, 143)
+        (host, port) = split_host_port(
+            autoblockchainify.config.arg.stamper_imap_server, 143)
         with IMAP4(host=host, port=port) as imap:
             imap.starttls()
             imap.login(autoblockchainify.config.arg.stamper_username,
@@ -311,7 +318,7 @@ def wait_for_receive(logfile):
                 else:
                     logging.warning("IMAP server does not support IDLE")
                     # Poll every minute, for 10 minutes
-                    for i in range(10):
+                    for _ in range(10):
                         time.sleep(60)
                         if check_for_stamper_mail(imap, stat, logfile):
                             return
@@ -337,9 +344,11 @@ def async_email_timestamp(resume=False, wait=None):
     repo = git.Repository(path)
     if repo.head_is_unborn:
         if resume:
-            logging.info("Cannot resume timestamp by email in repository without commits")
+            logging.info(
+                "Cannot resume timestamp by email in repository without commits")
         else:
-            logging.error("Cannot timestamp by email in repository without commits")
+            logging.error(
+                "Cannot timestamp by email in repository without commits")
         return
     head = repo.head
     logfile = Path(path, 'pgp-timestamp.tmp')

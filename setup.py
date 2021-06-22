@@ -49,8 +49,8 @@ setuptools.setup(
     url="https://gitlab.com/zeitgitter/autoblockchainify",
     license='AGPLv3',
     packages=setuptools.find_packages(),
-    install_requires=['pygit2', 'configargparse',
-        'setuptools', 'git-timestamp>=1.0.4'],
+    install_requires=['pygit2', 'configargparse~=1.2',
+        'setuptools', 'git-timestamp>=1.0.4', 'signale-logging~=0.5'],
     package_data={'autoblockchainify': ['sample.conf', 'web/*']},
     python_requires='>=3.7',
     entry_points={
