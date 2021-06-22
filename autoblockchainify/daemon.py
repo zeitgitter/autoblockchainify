@@ -21,7 +21,7 @@
 # Set up the daemon
 
 
-from signale import Signale
+import signale
 import subprocess
 from pathlib import Path
 
@@ -30,7 +30,7 @@ import autoblockchainify.config
 import autoblockchainify.version
 
 
-logging = Signale({"scope": "config"})
+logging = signale.Signale({"scope": "daemon"})
 
 def finish_setup(arg):
     # Create git repository, if necessary and set user name/email
@@ -50,7 +50,7 @@ def finish_setup(arg):
 .ssh/
 ''')
     if arg.identity is not None:
-        logging.info("Initializing new repo with user info")
+        logging.start("Initializing new repo with user info")
         (name, mail) = arg.identity.split(' <')
         subprocess.run(['git', 'config', 'user.name', name],
                        cwd=repo, check=True)
@@ -63,6 +63,6 @@ def run():
     finish_setup(autoblockchainify.config.arg)
     # Try to resume waiting for a PGP Timestamping Server reply, if any
     if autoblockchainify.config.arg.stamper_own_address:
-        logging.info("possibly resuming cross-timestamping by mail")
+        logging.pending("possibly resuming cross-timestamping by mail")
         autoblockchainify.mail.async_email_timestamp(resume=True)
     autoblockchainify.commit.loop()

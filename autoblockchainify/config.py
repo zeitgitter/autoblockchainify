@@ -205,5 +205,5 @@ def get_args(args=None, config_file_contents=None):
     if not arg.no_dovecot_bug_workaround:
         arg.stamper_from = arg.stamper_from[:-1]  # See help text
 
-    logging.debug("Settings applied: %s" % str(arg))
+    logging.success("Settings applied: %s" % str(arg), level=signale.DEBUG)
     return arg

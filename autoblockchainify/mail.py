@@ -69,7 +69,7 @@ Subject: %s
 
 %s""" % (frm, to, date, subject, body)
         smtp.sendmail(frm, to, msg)
-        logging.info("Timestamping request mailed")
+        logging.complete("Timestamping request mailed")
 
 
 def extract_pgp_body(body):
@@ -132,34 +132,34 @@ def body_signature_correct(bodylines, stat):
                          env=env, input=body.encode('ASCII'),
                          stderr=subprocess.PIPE)
     stderr = maybe_decode(res.stderr)
-    logging.info(stderr)
+    logging.complete(stderr)
     if res.returncode != 0:
-        logging.warning("gpg1 return code %d (%r)" % (res.returncode, stderr))
+        logging.error("gpg1 return code %d (%r)" % (res.returncode, stderr))
         return False
     if '\ngpg: Good signature' not in stderr:
-        logging.warning("Missing good signature (%r)" % stderr)
+        logging.error("Missing good signature (%r)" % stderr)
         return False
     if not stderr.startswith('gpg: Signature made '):
-        logging.warning("No signature made (%r)" % stderr)
+        logging.error("No signature made (%r)" % stderr)
         return False
     if not ((' key ID %s\n' % autoblockchainify.config.arg.stamper_keyid)
             in stderr):
-        logging.warning("Signature by wrong KeyID (%r)" % stderr)
+        logging.error("Signature by wrong KeyID (%r)" % stderr)
         return False
     try:
         sigtime = datetime.strptime(stderr[24:48], "%b %d %H:%M:%S %Y %Z")
         logging.xdebug(sigtime)
     except ValueError:
-        logging.warning("Illegal signature date format %r (%r)" %
+        logging.error("Illegal signature date format %r (%r)" %
                         (stderr[24:48], stderr))
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
-        logging.warning("Signature time %s lies more than 30 seconds in the future"
+        logging.error("Signature time %s lies more than 30 seconds in the future"
                         % sigtime)
         return False
     modtime = datetime.utcfromtimestamp(stat.st_mtime)
     if sigtime < modtime - timedelta(seconds=30):
-        logging.warning("Signature time %s is more than 30 seconds before\n"
+        logging.error("Signature time %s is more than 30 seconds before\n"
                         "file modification time %s"
                         % (sigtime, modtime))
         return False
@@ -169,24 +169,24 @@ def body_signature_correct(bodylines, stat):
 def verify_body_and_save_signature(body, stat, logfile, msgno):
     bodylines = extract_pgp_body(body)
     if bodylines is None:
-        logging.warning("No body lines")
+        logging.error("No body lines")
         return False
 
     res = body_contains_file(bodylines, logfile)
     if res is None:
-        logging.warning("File contents not in message %s" % msgno)
+        logging.error("File contents not in message %s" % msgno)
         return False
     else:
         (before, after) = res
         logging.debug("Message wrapped in %d lines before, %d after" %
                       (before, after))
         if before > 20 or after > 20:
-            logging.warning("Too many lines added by the PGP Timestamping Server"
+            logging.error("Too many lines added by the PGP Timestamping Server"
                             " before (%d)/after (%d) our contents" % (before, after))
             return False
 
     if not body_signature_correct(bodylines, stat):
-        logging.warning("Body signature incorrect")
+        logging.error("Body signature incorrect")
         return False
 
     save_signature(bodylines, logfile)
@@ -242,7 +242,7 @@ def file_unchanged(stat, logfile):
 def imap_idle(imap, stat, logfile):
     while True:
         imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
-        logging.info("IMAP idling")
+        logging.pause("IMAP idling")
         line = imap.readline().strip()
         logging.debug("IMAP IDLE → %s" % line)
         if line != b'+ idling':
@@ -255,7 +255,7 @@ def imap_idle(imap, stat, logfile):
                 return False
             match = re.match(r'^\* ([0-9]+) EXISTS$', str(line, 'ASCII'))
             if match:
-                logging.info("You have new mail %s!"
+                logging.success("You have new mail %s!"
                              % match.group(1).encode('ASCII'))
                 # Stop idling
                 imap.send(b'DONE\r\n')
@@ -263,7 +263,7 @@ def imap_idle(imap, stat, logfile):
                     return False
                 break  # Restart IDLE command
             # Otherwise: Uninteresting untagged response, continue idling
-        logging.error("Next mail sent, giving up waiting on now-old reply")
+        logging.stop("Next mail sent, giving up waiting on now-old reply")
 
 
 def check_for_stamper_mail(imap, stat, logfile):
@@ -287,7 +287,7 @@ def check_for_stamper_mail(imap, stat, logfile):
                 logging.debug("IMAP FETCH BODY (%s) → %s…" %
                               (msgid, m[1][:20]))
                 if verify_body_and_save_signature(m[1], stat, logfile, msgid):
-                    logging.info(
+                    logging.success(
                         "Successful answer in message #%s; deleting" % msgid)
                     imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
@@ -322,7 +322,7 @@ def wait_for_receive(logfile):
                         time.sleep(60)
                         if check_for_stamper_mail(imap, stat, logfile):
                             return
-                    logging.error("No response received, giving up")
+                    logging.stop("No response received, giving up")
 
 
 def not_modified_in(file, wait):
@@ -344,10 +344,10 @@ def async_email_timestamp(resume=False, wait=None):
     repo = git.Repository(path)
     if repo.head_is_unborn:
         if resume:
-            logging.info(
+            logging.stop(
                 "Cannot resume timestamp by email in repository without commits")
         else:
-            logging.error(
+            logging.stop(
                 "Cannot timestamp by email in repository without commits")
         return
     head = repo.head
@@ -355,13 +355,13 @@ def async_email_timestamp(resume=False, wait=None):
     sigfile = Path(path, 'pgp-timestamp.sig')
     if resume:
         if not logfile.is_file():
-            logging.info("Not resuming mail timestamp: No pending mail reply")
+            logging.stop("Not resuming mail timestamp: No pending mail reply")
             return
         with logfile.open() as f:
             contents = f.read()
         logging.xdebug("Resuming with logfile contents: %r" % contents)
         if len(contents) < 40:
-            logging.info("Not resuming mail timestamp: No revision info")
+            logging.stop("Not resuming mail timestamp: No revision info")
             return
     else:  # Fresh request
         # No recent attempts or results for mail timestamping

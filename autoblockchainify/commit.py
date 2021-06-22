@@ -21,7 +21,7 @@
 # Committing to git and obtaining timestamps
 
 from datetime import datetime, timezone
-from signale import Signale
+import signale
 from pathlib import Path
 import subprocess
 import sys
@@ -34,11 +34,11 @@ import pygit2 as git
 import autoblockchainify.config
 import autoblockchainify.mail
 
-logging = Signale({"scope": "commit"})
+logging = signale.Signale({"scope": "commit"})
 
 
 def push_upstream(repo, to, branches):
-    logging.info("Pushing to %s" % (['git', 'push', to] + branches))
+    logging.pending("Pushing to %s" % (['git', 'push', to] + branches))
     ret = subprocess.run(['git', 'push', to] + branches,
                          cwd=repo)
     if ret.returncode != 0:
@@ -48,7 +48,7 @@ def push_upstream(repo, to, branches):
 def cross_timestamp(repo, options):
     ret = subprocess.run(['git', 'timestamp'] + options, cwd=repo)
     if ret.returncode != 0:
-        sys.stderr.write("git timestamp %s failed" % (' '.join(options)))
+        logging.error("git timestamp %s failed" % (' '.join(options)))
 
 
 def has_user_changes(repo):
@@ -125,7 +125,7 @@ def do_commit():
             repositories = autoblockchainify.config.arg.push_repository
             branches = autoblockchainify.config.arg.push_branch
             for r in autoblockchainify.config.arg.zeitgitter_servers:
-                logging.debug("Cross-timestamping %s" % r)
+                logging.pending("Cross-timestamping %s" % r, level=signale.DEBUG)
                 if '=' in r:
                     (branch, server) = r.split('=', 1)
                     cross_timestamp(repo, ['--branch', branch,
@@ -136,16 +136,16 @@ def do_commit():
 
             # 3. Push
             for r in repositories:
-                logging.info("Pushing upstream to %s" % r)
+                logging.pending("Pushing upstream to %s" % r)
                 push_upstream(repo, r, branches)
 
             # 4. Timestamp by mail (asynchronously)
             if autoblockchainify.config.arg.stamper_own_address:
                 autoblockchainify.mail.async_email_timestamp(wait=force_interval)
 
-        logging.info("do_commit done at " +
+        logging.complete("do_commit done at " +
                 datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
-    except Exception as e:
+    except Exception:
         logging.exception("Unhandled exception in commit thread")
 
 
