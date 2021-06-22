@@ -21,7 +21,7 @@
 # Set up the daemon
 
 
-import logging as _logging
+from signale import Signale
 import subprocess
 from pathlib import Path
 
@@ -29,16 +29,8 @@ import autoblockchainify.commit
 import autoblockchainify.config
 import autoblockchainify.version
 
-# Add XDEBUG (5) level and logging.xdebug() method
-def xdebug(self, msg, *args, **kwargs):
-    self.log(xdebug_level, msg, *args, **kwargs)
 
-
-logging = _logging.getLogger('daemon')
-xdebug_level = _logging.DEBUG//2
-_logging.addLevelName(xdebug_level, 'XDEBUG')
-setattr(_logging.Logger, 'xdebug', xdebug)
-
+logging = Signale({"scope": "config"})
 
 def finish_setup(arg):
     # Create git repository, if necessary and set user name/email
@@ -71,7 +63,6 @@ def run():
     finish_setup(autoblockchainify.config.arg)
     # Try to resume waiting for a PGP Timestamping Server reply, if any
     if autoblockchainify.config.arg.stamper_own_address:
-        repo = autoblockchainify.config.arg.repository
         logging.info("possibly resuming cross-timestamping by mail")
         autoblockchainify.mail.async_email_timestamp(resume=True)
     autoblockchainify.commit.loop()
