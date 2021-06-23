@@ -301,7 +301,7 @@ def wait_for_receive(logfile):
                     suffix="Threads: " + str(threading.enumerate()))
         with serialize_receive:
             if not logfile.is_file():
-                logging.warning("Logfile vanished. Double mail receive thread?")
+                logging.warning("Logfile vanished, should not happen")
                 return
             stat = logfile.stat()
             logging.debug("Timestamp revision file is from %d" % stat.st_mtime)
@@ -349,12 +349,8 @@ def async_email_timestamp(resume=False, wait=None):
     path = autoblockchainify.config.arg.repository
     repo = git.Repository(path)
     if repo.head_is_unborn:
-        if resume:
-            logging.stop(
-                "Cannot resume timestamp by email in repository without commits")
-        else:
-            logging.stop(
-                "Cannot timestamp by email in repository without commits")
+        logging.stop(
+            "Cannot timestamp by email yet: repository without commits")
         return
     head = repo.head
     logfile = Path(path, 'pgp-timestamp.tmp')
@@ -381,5 +377,5 @@ def async_email_timestamp(resume=False, wait=None):
                 with logfile.open('w') as f:
                     f.write(new_rev)
                 send(new_rev)
-        threading.Thread(target=wait_for_receive, args=(logfile,), name="mail",
-                         daemon=True).start()
+            threading.Thread(target=wait_for_receive, args=(logfile,), name="mail",
+                             daemon=True).start()

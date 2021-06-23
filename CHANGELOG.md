@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `--debug-level 3`.
 
 ## Fixed
+- Spurious error message "Logfile vanished. Double mail receive thread?" was
+  caused by too little wiggle room for timestamping+delays and bad logic
+  (logfile creation wasn't the precondition for waiting for the mail). This
+  resulted in every second mail-based timestamp being skipped for the example
+  setup.
 
 ## Changed
 - Commit messages now use "🔗" emoji directly instead of ":link:"

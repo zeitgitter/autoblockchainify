@@ -108,9 +108,11 @@ def do_commit():
        will be added to a future commit."""
     logging.start("do_commit", suffix="Threads: " + str(threading.enumerate()), level=signale.XDEBUG)
     # Allow 5% of an interval tolerance, such that small timing differences
-    # will not lead to lengthening the duration by one commit_interval
+    # will not lead to lengthening the duration by one commit_interval.
+    # This is as early as possible, because mail timestamps will be delayed for
+    # number_of_timestampers * zeitgitter_sleep + connection_plus_work_delays
     force_interval = (autoblockchainify.config.arg.commit_interval
-                      * (autoblockchainify.config.arg.force_after_intervals - 0.05))
+                      * (autoblockchainify.config.arg.force_after_intervals - 0.95))
     try:
         repo = autoblockchainify.config.arg.repository
         # If a merge (a manual process on the repository) is detected,
