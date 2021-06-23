@@ -31,6 +31,12 @@ import autoblockchainify.version
 
 
 logging = signale.Signale({"scope": "daemon"})
+try:
+    # Aligned output, if supported by this version of Signale
+    signale.set_align(8, 8)
+except AttributeError:
+    pass
+
 
 def finish_setup(arg):
     # Create git repository, if necessary and set user name/email

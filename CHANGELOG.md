@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Changed
 - Commit messages now use "🔗" emoji directly instead of ":link:"
-- Streamlined and improved logging messages; switched to Signale
+- Streamlined and improved logging messages; switched to Signale, using
+  aligned mode (more readable without ANSI colors)
 - Rely on `deltat` library instead of local copy.
 
 
