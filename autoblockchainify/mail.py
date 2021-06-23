@@ -298,7 +298,7 @@ def check_for_stamper_mail(imap, stat, logfile):
 def wait_for_receive(logfile):
     try:
         logging.start("wait_for_receive", level=signale.XDEBUG,
-                    suffix="Threads: " + str(threading.enumerate()))
+                      suffix="Threads: " + str(threading.enumerate()))
         with serialize_receive:
             if not logfile.is_file():
                 logging.warning("Logfile vanished, should not happen")
@@ -310,7 +310,7 @@ def wait_for_receive(logfile):
             with IMAP4(host=host, port=port) as imap:
                 imap.starttls()
                 imap.login(autoblockchainify.config.arg.stamper_username,
-                        autoblockchainify.config.arg.stamper_password)
+                           autoblockchainify.config.arg.stamper_password)
                 imap.select('INBOX')
                 if not check_for_stamper_mail(imap, stat, logfile):
                     # No existing message found, wait for more incoming messages
@@ -318,7 +318,8 @@ def wait_for_receive(logfile):
                     if 'IDLE' in imap.capabilities:
                         imap_idle(imap, stat, logfile)
                     else:
-                        logging.warning("IMAP server does not support IDLE; polling instead")
+                        logging.warning(
+                            "IMAP server does not support IDLE; polling instead")
                         # Poll every minute, for 10 minutes
                         for _ in range(10):
                             time.sleep(60)

@@ -106,7 +106,8 @@ def do_commit():
     4. (Optionally) cross-timestamp using email (asynchronous), if the previous
        email has been sent more than FORCE_AFTER_INTERVALS ago. The response
        will be added to a future commit."""
-    logging.start("do_commit", suffix="Threads: " + str(threading.enumerate()), level=signale.XDEBUG)
+    logging.start("do_commit", suffix="Threads: " +
+                  str(threading.enumerate()), level=signale.XDEBUG)
     # Allow 5% of an interval tolerance, such that small timing differences
     # will not lead to lengthening the duration by one commit_interval.
     # This is as early as possible, because mail timestamps will be delayed for
@@ -127,14 +128,16 @@ def do_commit():
             repositories = autoblockchainify.config.arg.push_repository
             branches = autoblockchainify.config.arg.push_branch
             for r in autoblockchainify.config.arg.zeitgitter_servers:
-                logging.pending("Cross-timestamping %s" % r, level=signale.DEBUG)
+                logging.pending("Cross-timestamping %s" %
+                                r, level=signale.DEBUG)
                 if '=' in r:
                     (branch, server) = r.split('=', 1)
                     cross_timestamp(repo, ['--branch', branch,
-                        '--server', server])
+                                           '--server', server])
                 else:
                     cross_timestamp(repo, ['--server', r])
-                time.sleep(autoblockchainify.config.arg.zeitgitter_sleep.total_seconds())
+                time.sleep(
+                    autoblockchainify.config.arg.zeitgitter_sleep.total_seconds())
 
             # 3. Push
             for r in repositories:
@@ -143,10 +146,11 @@ def do_commit():
 
             # 4. Timestamp by mail (asynchronously)
             if autoblockchainify.config.arg.stamper_own_address:
-                autoblockchainify.mail.async_email_timestamp(wait=force_interval)
+                autoblockchainify.mail.async_email_timestamp(
+                    wait=force_interval)
 
         logging.complete("do_commit done at " +
-                datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
+                         datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
     except Exception:
         logging.exception("Unhandled exception in commit thread")
 
