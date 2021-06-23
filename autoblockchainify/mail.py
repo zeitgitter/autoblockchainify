@@ -260,6 +260,7 @@ def imap_idle(imap, stat, logfile):
                 # Stop idling
                 imap.send(b'DONE\r\n')
                 if check_for_stamper_mail(imap, stat, logfile) is True:
+                    logging.xdebug("Returning from success after idling")
                     return False
                 break  # Restart IDLE command
             # Otherwise: Uninteresting untagged response, continue idling
@@ -295,34 +296,39 @@ def check_for_stamper_mail(imap, stat, logfile):
 
 
 def wait_for_receive(logfile):
-    logging.start("wait_for_receive", level=signale.XDEBUG,
-                  suffix="Threads: " + str(threading.enumerate()))
-    with serialize_receive:
-        if not logfile.is_file():
-            logging.warning("Logfile vanished. Double mail receive thread?")
-            return
-        stat = logfile.stat()
-        logging.debug("Timestamp revision file is from %d" % stat.st_mtime)
-        (host, port) = split_host_port(
-            autoblockchainify.config.arg.stamper_imap_server, 143)
-        with IMAP4(host=host, port=port) as imap:
-            imap.starttls()
-            imap.login(autoblockchainify.config.arg.stamper_username,
-                       autoblockchainify.config.arg.stamper_password)
-            imap.select('INBOX')
-            if not check_for_stamper_mail(imap, stat, logfile):
-                # No existing message found, wait for more incoming messages
-                # and process them until definitely okay or giving up for good
-                if 'IDLE' in imap.capabilities:
-                    imap_idle(imap, stat, logfile)
-                else:
-                    logging.warning("IMAP server does not support IDLE")
-                    # Poll every minute, for 10 minutes
-                    for _ in range(10):
-                        time.sleep(60)
-                        if check_for_stamper_mail(imap, stat, logfile):
-                            return
-                    logging.stop("No response received, giving up")
+    try:
+        logging.start("wait_for_receive", level=signale.XDEBUG,
+                    suffix="Threads: " + str(threading.enumerate()))
+        with serialize_receive:
+            if not logfile.is_file():
+                logging.warning("Logfile vanished. Double mail receive thread?")
+                return
+            stat = logfile.stat()
+            logging.debug("Timestamp revision file is from %d" % stat.st_mtime)
+            (host, port) = split_host_port(
+                autoblockchainify.config.arg.stamper_imap_server, 143)
+            with IMAP4(host=host, port=port) as imap:
+                imap.starttls()
+                imap.login(autoblockchainify.config.arg.stamper_username,
+                        autoblockchainify.config.arg.stamper_password)
+                imap.select('INBOX')
+                if not check_for_stamper_mail(imap, stat, logfile):
+                    # No existing message found, wait for more incoming messages
+                    # and process them until definitely okay or giving up for good
+                    if 'IDLE' in imap.capabilities:
+                        imap_idle(imap, stat, logfile)
+                    else:
+                        logging.warning("IMAP server does not support IDLE; polling instead")
+                        # Poll every minute, for 10 minutes
+                        for _ in range(10):
+                            time.sleep(60)
+                            if check_for_stamper_mail(imap, stat, logfile):
+                                logging.success("Polling found right mail")
+                                return
+                        logging.stop("No response received, giving up")
+        logging.success("Returning from mail thread", level=signale.XDEBUG)
+    except Exception:
+        logging.exception("Unhandled exception in mail thread")
 
 
 def not_modified_in(file, wait):
