@@ -2,7 +2,8 @@
 d=$1
 shift
 cd $d
-# Implicitely, there is already ".gitignore"; creating one just to be sure
+# From daemon initialization, there already should be a ".gitignore";
+# still creating a file just to be sure
 echo "Test 1" > $d/a.txt
 for i in 0 1 2 3 4 5 6 7 8 9; do
   for j in 0 1 2 3 4 5; do

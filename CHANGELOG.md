@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   configuration to be backward-compatible, do not use `--debug-level XDEBUG`,
   which will raise an exception at start of older versions, but
   `--debug-level 3`.
+- Documentation for real-world mail test (and test for it)
 
 ## Fixed
 - Spurious error message "Logfile vanished. Double mail receive thread?" was
