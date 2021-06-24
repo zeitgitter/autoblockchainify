@@ -21,12 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   (logfile creation wasn't the precondition for waiting for the mail). This
   resulted in every second mail-based timestamp being skipped for the example
   setup.
+- Made mail logic more robust (see comment before `async_email_timestamp()`)
 
 ## Changed
 - Commit messages now use "🔗" emoji directly instead of ":link:"
 - Streamlined and improved logging messages; switched to Signale, using
   aligned mode (more readable without ANSI colors)
-- Rely on `deltat` library instead of local copy.
+- Rely on `deltat` library instead of local copy
 
 
 # 0.9.5 - 2021-01-16

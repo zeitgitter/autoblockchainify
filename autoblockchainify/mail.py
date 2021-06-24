@@ -320,11 +320,12 @@ def wait_for_receive(logfile):
                     else:
                         logging.warning(
                             "IMAP server does not support IDLE; polling instead")
-                        # Poll every minute, for 10 minutes
+                        # Poll every minute, for 10 minutes;
+                        # see description for `async_email_timestamp` below.
                         for _ in range(10):
                             time.sleep(60)
                             if check_for_stamper_mail(imap, stat, logfile):
-                                logging.success("Polling found right mail")
+                                logging.success("Polling found matching mail")
                                 return
                         logging.stop("No response received, giving up")
         logging.success("Returning from mail thread", level=signale.XDEBUG)
@@ -332,21 +333,63 @@ def wait_for_receive(logfile):
         logging.exception("Unhandled exception in mail thread")
 
 
-def not_modified_in(file, wait):
+def modified_in(file, wait):
     """Has `logfile` not been modified in ~`wait` seconds?
     Non-existent file is considered to *not* fulfill this."""
     try:
         stat = file.stat()
         mtime = datetime.utcfromtimestamp(stat.st_mtime)
         now = datetime.utcnow()
-        return mtime + wait < now
+        logging.xdebug("modified_in(%s, %s): mtime %s, now %s" %
+                       (file, wait, mtime, now))
+        return mtime + wait >= now
     except FileNotFoundError:
+        logging.xdebug("modified_in: %s not found" % file)
         return False
 
 
-def async_email_timestamp(resume=False, wait=None):
+# * `resume=True`: Run once at startup, to wait for a possibly pending
+#   outstanding mail reply, indicated by the presence of the logfile.
+#   Cases:
+#   1. Pending email (indicated by logfile)
+#      - Wait for reply (should already have arrived or in the next 5 minutes)
+#      - Abort when new logfile arrives
+#   2. No pending mail
+#      - Do nothing, wait for next commit
+# * `resume=False`: Run at least once every
+#   `commit_interval * force_after_intervals` (± some jitter).
+#   sigfile may be generated up to about 5 minutes later (mail
+#   timestamper processes mails on every full 5-minute interval).
+#   Cases:
+#   1. First commit (no sigfile yet)
+#      - Send mail unconditionally
+#      - Wait for reply, abort when new logfile arrives
+#   2. Only one forced commit every force interval:
+#      - Send mail unconditionally on every commit
+#      - Wait for reply, abort when new logfile arrives
+#   3. Frequent changes (several of the commit_intervals):
+#      - Previous sigfile should already have been committed
+#        (as we are called only when a commit has just been made)
+#      - Send mail when mail reply would be received no
+#        earlier than the previous sigfile date plus force_interval
+#      - Wait for reply, abort when new logfile arrives
+#   4. Previous mail has not been replied to (mail problem or too frequent)
+#      - Force send after force_interval anyway
+#      - Wait for reply, abort when new logfile arrives
+#   Solution:
+#   - Trigger new mail 3…4 minutes before sigfile time+force_interval
+#     (assuming that force_interval is a multiple of 5 minutes; if
+#     not, mails might be up to 3…4 minutes more frequent than
+#     force_interval, possibly causing more than one mail per
+#     forced commit, i.e., some work by the PGP timestamper is wasted)
+#   - The minimum force_interval has to greater than 4+5 minutes
+#   - Do not trigger new mail if logfile exists and has been written to in the
+#     past 4+5-epsilon minutes
+# Note: `wait` is almost 1 commit_interval shorter than forced_interval
+# (see `do_commit()`.)
+def async_email_timestamp(resume=False):
     """If called with `resume=True`, tries to resume waiting for the mail"""
-    logging.xdebug("async_email_timestamp(%r, %r)" % (resume, wait))
+    logging.xdebug("async_email_timestamp(%r)" % resume)
     path = autoblockchainify.config.arg.repository
     repo = git.Repository(path)
     if repo.head_is_unborn:
@@ -366,10 +409,17 @@ def async_email_timestamp(resume=False, wait=None):
         if len(contents) < 40:
             logging.stop("Not resuming mail timestamp: No revision info")
             return
+        threading.Thread(target=wait_for_receive, args=(logfile,), name="mail_resume",
+                         daemon=True).start()
     else:  # Fresh request
         # No recent attempts or results for mail timestamping
-        if (not sigfile.is_file() or not_modified_in(logfile, wait)
-                or not_modified_in(sigfile, wait)):
+        if logfile.is_file() and modified_in(logfile, timedelta(minutes=4+5)):
+            logging.stop("Logfile more recent than 4+5 minutes, skipping")
+            return
+        sigfile_interval = (autoblockchainify.config.arg.commit_interval
+                            * autoblockchainify.config.arg.force_after_intervals
+                            - timedelta(minutes=4))
+        if not sigfile.is_file() or not modified_in(sigfile, sigfile_interval):
             new_rev = ("git commit %s\nTimestamp requested at %s\n" %
                        (head.target.hex,
                         strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))

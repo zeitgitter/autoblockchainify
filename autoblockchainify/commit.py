@@ -146,8 +146,7 @@ def do_commit():
 
             # 4. Timestamp by mail (asynchronously)
             if autoblockchainify.config.arg.stamper_own_address:
-                autoblockchainify.mail.async_email_timestamp(
-                    wait=force_interval)
+                autoblockchainify.mail.async_email_timestamp()
 
         logging.complete("do_commit done at " +
                          datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
