@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Streamlined and improved logging messages; switched to Signale, using
   aligned mode (more readable without ANSI colors)
 - Rely on `deltat` library instead of local copy
+- No extra delay after last timestamper
 
 
 # 0.9.5 - 2021-01-16
