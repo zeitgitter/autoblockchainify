@@ -387,6 +387,29 @@ def modified_in(file, wait):
 #     past 4+5-epsilon minutes
 # Note: `wait` is almost 1 commit_interval shorter than forced_interval
 # (see `do_commit()`.)
+def needs_timestamp(log=False):
+    if not autoblockchainify.config.arg.stamper_own_address:
+        if log:
+            logging.debug("Timestamping by mail not configured")
+        return False
+    path = autoblockchainify.config.arg.repository
+    logfile = Path(path, 'pgp-timestamp.tmp')
+    sigfile = Path(path, 'pgp-timestamp.sig')
+    sigfile_interval = (autoblockchainify.config.arg.commit_interval
+                        * autoblockchainify.config.arg.force_after_intervals
+                        - timedelta(minutes=4))
+    if logfile.is_file() and modified_in(logfile, timedelta(minutes=4+5)):
+        if log:
+            logging.stop("Logfile more recent than 4+5 minutes, skipping")
+        return False
+    if not sigfile.is_file() or not modified_in(sigfile, sigfile_interval):
+        return True
+    else:
+        if log:
+            logging.debug("Sigfile too fresh")
+        return False
+
+
 def async_email_timestamp(resume=False):
     """If called with `resume=True`, tries to resume waiting for the mail"""
     logging.xdebug("async_email_timestamp(%r)" % resume)
@@ -398,7 +421,6 @@ def async_email_timestamp(resume=False):
         return
     head = repo.head
     logfile = Path(path, 'pgp-timestamp.tmp')
-    sigfile = Path(path, 'pgp-timestamp.sig')
     if resume:
         if not logfile.is_file():
             logging.stop("Not resuming mail timestamp: No pending mail reply")
@@ -413,13 +435,7 @@ def async_email_timestamp(resume=False):
                          daemon=True).start()
     else:  # Fresh request
         # No recent attempts or results for mail timestamping
-        if logfile.is_file() and modified_in(logfile, timedelta(minutes=4+5)):
-            logging.stop("Logfile more recent than 4+5 minutes, skipping")
-            return
-        sigfile_interval = (autoblockchainify.config.arg.commit_interval
-                            * autoblockchainify.config.arg.force_after_intervals
-                            - timedelta(minutes=4))
-        if not sigfile.is_file() or not modified_in(sigfile, sigfile_interval):
+        if needs_timestamp(log=True):
             new_rev = ("git commit %s\nTimestamp requested at %s\n" %
                        (head.target.hex,
                         strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())))
