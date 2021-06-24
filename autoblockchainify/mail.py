@@ -119,7 +119,7 @@ def maybe_decode(s):
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
-    logging.debug("Bodylines: %s" % body)
+    logging.debug("Bodylines", suffix=body)
     # Cannot use Python gnupg wrapper: Requires GPG 1.x to verify
     # Copy env for gnupg without locale
     env = {}
