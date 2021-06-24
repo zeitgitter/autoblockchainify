@@ -148,7 +148,7 @@ def body_signature_correct(bodylines, stat):
         return False
     try:
         sigtime = datetime.strptime(stderr[24:48], "%b %d %H:%M:%S %Y %Z")
-        logging.xdebug(sigtime)
+        logging.xdebug("Extracted date %r" % sigtime)
     except ValueError:
         logging.error("Illegal signature date format %r (%r)" %
                       (stderr[24:48], stderr))
