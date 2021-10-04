@@ -3,14 +3,13 @@
 # the dev build Dockerfile, whereas lines ending in `##PRODONLY##` will be
 # deleted.
 
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 # The next line is hardcoded in Makefile as PRODONLY,
 # as ARG does not support comments
 ARG VERSIONMATCH=
 
 # gnupg1/gpg1 steps are for interfacing with the PGP Timestamping Service only.
-# Explicit python3-pygit2 install is required for ARMv6 only.
 RUN apt update && \
     apt install -y gnupg1 libgit2-dev python3-pygit2 python3-pip git wget && \
     apt clean && \
