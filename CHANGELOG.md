@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 1.0.0 - 2021-11-04
+## Added
+
+## Fixed
+
+## Changed
+- Upgraded to debian:bullseye-slim
+
+
 # 0.9.6 - 2021-06-25
 ## Added
 - Name and print threads for debugging

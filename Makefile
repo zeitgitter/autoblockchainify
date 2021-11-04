@@ -66,7 +66,7 @@ VERSIONTAGS = $(shell sed -n -e 's,^VERSION = .\(\([0-9]*.[0-9]*\).[0-9]*\).$$,-
 # by overriding it on the command line, or set to `==<version>`, where
 # `<version>` is extracted from `autoblockchainify/version.py`.
 VERSIONMATCH = ==$(shell sed -n -e 's,^VERSION = .\([0-9]*.[0-9]*.[0-9]*\).*$$,\1,p' autoblockchainify/version.py)
-# debian:buster-slim also supports
+# debian:bullseye-slim also supports
 # linux/arm64/v8,linux/mips64le,linux/ppc64le,linux/s390x. If there is demand,
 # I'll happily add them to the default build.
 PLATFORMS  = linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
