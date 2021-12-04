@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 1.0.0 - 2021-11-04
 ## Added
+- Notice in `run.sh` that some `gpg` (*not* `gpg1`) commands seem to remove the
+  keys of the *PGP Digital Timestamping Service* (probably due to their old
+  format). If that happens, running `docker-compose exec --user 15177
+  autoblockchainify gpg1 --pgp2 --import /stamper.asc` will load the keys again.
 
 ## Fixed
 

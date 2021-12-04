@@ -18,7 +18,7 @@ control system. To learn more, see
   requested there.
 * All timestamps requested from the Zeitgitter network will be regularily
   cross-timestamped within the Zeitgitter network and with the *PGP Digital
-  Timestamping Service* as well as several other Blockchain-based timestamping
+  Timestamping Service* as well as other (Blockchain-based) timestamping
   services.
 
 ## What do I need to configure?
